@@ -1,0 +1,913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Available Labs &mdash; University Lab Finder</title>
+    <style>
+        :root {
+            --color-bg: #ffffff;
+            --color-surface: #fafafa;
+            --color-border: #e5e5e5;
+            --color-border-light: #f0f0f0;
+            --color-text: #1a1a1a;
+            --color-text-secondary: #6b6b6b;
+            --color-text-muted: #999999;
+            --color-accent: #0F766E;
+            --color-accent-subtle: #e8f5f3;
+            --color-available-border: #0F766E;
+            --color-available-bg: #f9fdfc;
+            --color-occupied-bg: #f8f8f8;
+            --color-occupied-text: #b0b0b0;
+            --color-segment-active-bg: #1a1a1a;
+            --color-segment-active-text: #ffffff;
+            --color-segment-bg: #f5f5f5;
+            --color-segment-text: #525252;
+            --color-segment-hover: #ebebeb;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 14px;
+            --radius-full: 999px;
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 40px;
+            --space-3xl: 48px;
+            --space-4xl: 64px;
+            --font-stack: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'SF Pro Text', 'Segoe UI', 'Inter', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            --font-mono: 'SF Mono', 'Fira Code', 'Fira Mono', 'Roboto Mono', 'Consolas', 'Liberation Mono', monospace;
+            --transition-fast: 150ms ease;
+            --transition-smooth: 220ms ease;
+            --max-width: 1100px;
+            --header-height: 64px;
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            font-size: 16px;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-stack);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            line-height: 1.5;
+            min-height: 100vh;
+            letter-spacing: -0.01em;
+        }
+
+        /* ── Header ─────────────────────── */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background-color: var(--color-bg);
+            border-bottom: 1px solid var(--color-border-light);
+            height: var(--header-height);
+            display: flex;
+            align-items: center;
+            padding: 0 var(--space-lg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            background-color: rgba(255, 255, 255, 0.92);
+        }
+
+        .header-inner {
+            max-width: var(--max-width);
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            align-items: baseline;
+            gap: var(--space-md);
+            flex-wrap: wrap;
+        }
+
+        .header-title {
+            font-size: 1.35rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            color: var(--color-text);
+            line-height: 1;
+        }
+
+        .header-subtitle {
+            font-size: 0.85rem;
+            color: var(--color-text-muted);
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Main Layout ────────────────── */
+        .main-container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+            padding: var(--space-2xl) var(--space-lg) var(--space-4xl);
+        }
+
+        /* ── Section Spacing ────────────── */
+        .section {
+            margin-bottom: var(--space-2xl);
+        }
+
+        .section-label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--color-text-muted);
+            margin-bottom: var(--space-sm);
+        }
+
+        /* ── Day Selector (Segmented Control) ── */
+        .day-selector {
+            display: flex;
+            gap: 2px;
+            background-color: var(--color-segment-bg);
+            border-radius: var(--radius-md);
+            padding: 3px;
+            width: fit-content;
+            flex-wrap: wrap;
+        }
+
+        .day-btn {
+            all: unset;
+            cursor: pointer;
+            padding: 10px 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            border-radius: var(--radius-sm);
+            color: var(--color-segment-text);
+            transition: background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+            white-space: nowrap;
+            position: relative;
+            user-select: none;
+            outline: none;
+        }
+
+        .day-btn:hover:not(.day-btn--active) {
+            background-color: var(--color-segment-hover);
+        }
+
+        .day-btn:focus-visible {
+            box-shadow: 0 0 0 2px var(--color-accent);
+            z-index: 1;
+        }
+
+        .day-btn--active {
+            background-color: var(--color-segment-active-bg);
+            color: var(--color-segment-active-text);
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+        }
+
+        /* ── Time Slot Selector ─────────── */
+        .time-selector {
+            display: flex;
+            gap: var(--space-sm);
+            flex-wrap: wrap;
+        }
+
+        .time-btn {
+            all: unset;
+            cursor: pointer;
+            padding: 10px 22px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            letter-spacing: 0.01em;
+            border-radius: var(--radius-full);
+            border: 1.5px solid var(--color-border);
+            color: var(--color-text-secondary);
+            background-color: var(--color-bg);
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+            user-select: none;
+            outline: none;
+        }
+
+        .time-btn:hover:not(.time-btn--active) {
+            border-color: #c0c0c0;
+            color: var(--color-text);
+            background-color: #fafafa;
+        }
+
+        .time-btn:focus-visible {
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+            border-color: var(--color-accent);
+        }
+
+        .time-btn--active {
+            background-color: var(--color-accent);
+            color: #ffffff;
+            border-color: var(--color-accent);
+            font-weight: 600;
+        }
+
+        /* ── Search Bar ─────────────────── */
+        .search-wrapper {
+            position: relative;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 12px 16px 12px 42px;
+            font-size: 0.9rem;
+            font-family: var(--font-stack);
+            letter-spacing: 0.01em;
+            border: 1.5px solid var(--color-border);
+            border-radius: var(--radius-md);
+            background-color: var(--color-bg);
+            color: var(--color-text);
+            transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+            outline: none;
+        }
+
+        .search-input::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        .search-input:focus {
+            border-color: var(--color-accent);
+            box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.1);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--color-text-muted);
+            width: 18px;
+            height: 18px;
+        }
+
+        /* ── Statistics ─────────────────── */
+        .stats-row {
+            display: flex;
+            gap: var(--space-lg);
+            flex-wrap: wrap;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 120px;
+            padding: var(--space-lg) var(--space-xl);
+            border: 1px solid var(--color-border-light);
+            border-radius: var(--radius-md);
+            background-color: var(--color-surface);
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            color: var(--color-text);
+            line-height: 1;
+            margin-bottom: var(--space-xs);
+        }
+
+        .stat-value--accent {
+            color: var(--color-accent);
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+            font-weight: 500;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+
+        /* ── Results Grid ───────────────── */
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: var(--space-md);
+        }
+
+        @media (min-width: 768px) {
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            }
+        }
+
+        /* ── Lab Card ───────────────────── */
+        .lab-card {
+            padding: var(--space-lg);
+            border-radius: var(--radius-lg);
+            border: 1.5px solid var(--color-border);
+            background-color: var(--color-bg);
+            transition: border-color var(--transition-smooth), background-color var(--transition-smooth), transform var(--transition-fast);
+            cursor: default;
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lab-card:hover {
+            transform: translateY(-1px);
+        }
+
+        .lab-card--available {
+            border-left: 4px solid var(--color-available-border);
+            background-color: var(--color-available-bg);
+            border-color: #d5ece8;
+        }
+
+        .lab-card--available:hover {
+            border-color: #b8ddd6;
+            background-color: #f2faf8;
+        }
+
+        .lab-card--occupied {
+            background-color: var(--color-occupied-bg);
+            border-color: #ebebeb;
+        }
+
+        .lab-card--occupied:hover {
+            border-color: #e0e0e0;
+        }
+
+        .lab-card--hidden {
+            display: none;
+        }
+
+        .lab-code {
+            font-family: var(--font-mono);
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            color: var(--color-text);
+            line-height: 1.2;
+        }
+
+        .lab-card--occupied .lab-code {
+            color: #b8b8b8;
+        }
+
+        .lab-status {
+            font-size: 0.8rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .lab-status--available {
+            color: var(--color-accent);
+        }
+
+        .lab-status--occupied {
+            color: var(--color-text-muted);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .status-dot--available {
+            background-color: var(--color-accent);
+        }
+
+        .status-dot--occupied {
+            background-color: #c5c5c5;
+        }
+
+        /* ── Empty State ────────────────── */
+        .empty-state {
+            text-align: center;
+            padding: var(--space-3xl) var(--space-lg);
+            color: var(--color-text-muted);
+            grid-column: 1 / -1;
+        }
+
+        .empty-state-text {
+            font-size: 0.95rem;
+            letter-spacing: 0.01em;
+        }
+
+        /* ── Footer Note ────────────────── */
+        .footer-note {
+            margin-top: var(--space-3xl);
+            padding-top: var(--space-lg);
+            border-top: 1px solid var(--color-border-light);
+            font-size: 0.78rem;
+            color: var(--color-text-muted);
+            letter-spacing: 0.02em;
+            text-align: center;
+        }
+
+        /* ── Responsive Adjustments ─────── */
+        @media (max-width: 600px) {
+            .header-inner {
+                gap: var(--space-xs);
+            }
+            .header-title {
+                font-size: 1.15rem;
+            }
+            .header-subtitle {
+                font-size: 0.75rem;
+            }
+            .day-btn {
+                padding: 8px 13px;
+                font-size: 0.78rem;
+            }
+            .time-btn {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+            .stats-row {
+                gap: var(--space-sm);
+            }
+            .stat-card {
+                padding: var(--space-md);
+                min-width: 90px;
+            }
+            .stat-value {
+                font-size: 1.6rem;
+            }
+            .results-grid {
+                grid-template-columns: repeat(auto-fill, minmax(155px, 1fr));
+                gap: var(--space-sm);
+            }
+            .lab-card {
+                padding: var(--space-md);
+            }
+            .lab-code {
+                font-size: 0.95rem;
+            }
+            .main-container {
+                padding: var(--space-lg) var(--space-md) var(--space-3xl);
+            }
+        }
+
+        @media (max-width: 380px) {
+            .day-btn {
+                padding: 7px 10px;
+                font-size: 0.72rem;
+            }
+            .time-btn {
+                padding: 7px 13px;
+                font-size: 0.75rem;
+            }
+            .results-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: var(--space-xs);
+            }
+            .lab-card {
+                padding: var(--space-sm) var(--space-md);
+                border-radius: var(--radius-sm);
+            }
+            .lab-code {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ═══════════════ HEADER ═══════════════ -->
+    <header class="site-header" role="banner">
+        <div class="header-inner">
+            <h1 class="header-title">Available Labs</h1>
+            <span class="header-subtitle">Spring 2026 &middot; School of Computing</span>
+        </div>
+    </header>
+
+    <!-- ═══════════════ MAIN CONTENT ═══════════════ -->
+    <main class="main-container" id="mainContent" role="main" aria-label="Lab availability finder">
+
+        <!-- Day Selector -->
+        <section class="section" aria-labelledby="dayLabel">
+            <p class="section-label" id="dayLabel">Day</p>
+            <div class="day-selector" id="daySelector" role="radiogroup" aria-label="Select day"></div>
+        </section>
+
+        <!-- Time Slot Selector -->
+        <section class="section" aria-labelledby="timeLabel">
+            <p class="section-label" id="timeLabel">Time Slot &mdash; 3-hour blocks</p>
+            <div class="time-selector" id="timeSelector" role="radiogroup" aria-label="Select time slot"></div>
+        </section>
+
+        <!-- Search Bar -->
+        <section class="section" aria-labelledby="searchLabel">
+            <p class="section-label" id="searchLabel">Find a Lab</p>
+            <div class="search-wrapper">
+                <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input
+                type="text"
+                class="search-input"
+                id="searchInput"
+                placeholder="Search by lab code, e.g. FT10-01L"
+                aria-label="Search lab by code"
+                autocomplete="off"
+                >
+            </div>
+        </section>
+
+        <!-- Statistics -->
+        <section class="section" aria-labelledby="statsLabel">
+            <p class="section-label" id="statsLabel">Snapshot</p>
+            <div class="stats-row" id="statsRow"></div>
+        </section>
+
+        <!-- Results Grid -->
+        <section class="section" aria-labelledby="resultsLabel">
+            <p class="section-label" id="resultsLabel">Labs</p>
+            <div class="results-grid" id="resultsGrid" role="list" aria-label="Lab room cards"></div>
+        </section>
+
+        <!-- Footer Note -->
+        <p class="footer-note">Data refreshes each semester. Only scheduled classes are shown &mdash; labs may be used ad-hoc when free.</p>
+    </main>
+
+    <script>
+        (function() {
+            // ─────────────────────────────────────
+            // 1. RAW OCCUPANCY DATA (as provided)
+            // ─────────────────────────────────────
+            const RAW_DATA = `
+        SUN 11:00 AM FT11-03L MON 2:00 PM FT11-04L WED 2:00 PM FT11-03L THU 8:00 AM FT11-04L SAT 8:00 AM FT11-03L TUE 11:00 AM FT11-03L SUN 8:00 AM 12F-31L SAT 2:00 PM 11B-20L SAT 2:00 PM FT11-04L THU 8:00 AM 09B-10L WED 8:00 AM 09B-08L WED 11:00 AM 09B-08L THU 8:00 AM 09B-08L THU 11:00 AM 09B-08L THU 2:00 PM 09B-08L THU 8:00 AM 09B-09L WED 2:00 PM 09B-09L WED 8:00 AM 09B-09L THU 11:00 AM 09F-27L THU 2:00 PM 09B-09L WED 11:00 AM 09B-09L WED 2:00 PM 09B-08L WED 8:00 AM 09B-10L THU 11:00 AM 09B-09L WED 2:00 PM 09F-24L THU 11:00 AM 10E-27L THU 2:00 PM 09B-11L WED 2:00 PM 12F-30L WED 2:00 PM 12F-32L WED 2:00 PM 12D-27L THU 11:00 AM 12F-32L WED 8:00 AM 09B-11L WED 11:00 AM 09B-11L
+        WED 2:00 PM 09B-11L TUE 11:00 AM 09B-08L TUE 2:00 PM 09B-08L TUE 8:00 AM 09B-09L TUE 11:00 AM 09B-09L WED 8:00 AM 09E-21L WED 11:00 AM 09E-21L TUE 2:00 PM 09B-09L TUE 8:00 AM 09B-10L SUN 11:00 AM 09B-10L SUN 2:00 PM 09B-10L MON 8:00 AM 09B-08L MON 11:00 AM 09B-08L MON 2:00 PM 09B-08L MON 8:00 AM 09B-09L SUN 8:00 AM 09B-08L MON 11:00 AM 09B-09L MON 2:00 PM 09B-09L SUN 11:00 AM 09B-08L SUN 2:00 PM 09B-08L SUN 8:00 AM 09B-09L MON 8:00 AM 09B-10L SUN 11:00 AM 09B-09L SUN 2:00 PM 09B-09L MON 11:00 AM 09B-10L SUN 8:00 AM 09B-10L MON 2:00 PM 09B-10L SUN 8:00 AM 09B-11L SUN 2:00 PM 09E-21L SUN 8:00 AM 09E-22L SUN 11:00 AM 09E-22L SUN 11:00 AM 09B-11L SAT 8:00 AM 09B-08L
+        SAT 11:00 AM 09B-08L SAT 2:00 PM 09B-08L SAT 8:00 AM 09B-09L SAT 11:00 AM 09B-09L SUN 2:00 PM 09E-22L SAT 2:00 PM 09B-09L SAT 8:00 AM 09B-10L SAT 11:00 AM 09B-10L SUN 8:00 AM 09F-24L SAT 8:00 AM 09E-22L SUN 8:00 AM 09E-21L SAT 2:00 PM 09B-10L SUN 11:00 AM 09E-21L SAT 11:00 AM 09E-22L
+        SAI 11:00 AM 12B-20L SAT 11:00 AM 12B-20L THU 8:00 AM 12B-20L THU 8:00 AM 12B-20L SAT 2:00 PM 12B-20L SAT 2:00 PM 12B-20L MON 11:00 AM 12B-20L MON 11:00 AM 12B-20L WED 8:00 AM 12B-20L WED 8:00 AM 12B-20L MON 8:00 AM 12B-20L MON 8:00 AM 12B-20L SUN 2:00 PM 12B-20L SUN 2:00 PM 12B-20L TUE 8:00 AM 12B-20L TUE 8:00 AM 12B-20L SUN 8:00 AM 12B-20L SUN 8:00 AM 12B-20L TUE 11:00 AM 12B-20L TUE 11:00 AM 12B-20L THU 2:00 PM FT10-02L THU 2:00 PM 12B-20L THU 2:00 PM 12B-20L THU 11:00 AM 12B-20L THU 11:00 AM 12B-20L WED 2:00 PM 12B-20L WED 2:00 PM 12B-20L MON 2:00 PM 12B-20L MON 2:00 PM 12B-20L WED 11:00 AM 12B-20L WED 11:00 AM 12B-20L SUN 11:00 AM 12B-20L SUN 11:00 AM 12B-20L
+        TUE 2:00 PM 12B-20L TUE 2:00 PM 12B-20L SAT 8:00 AM 12B-20L SAT 8:00 AM 12B-20L TUE 11:00 AM FT10-01L TUE 11:00 AM FT10-02L THU 8:00 AM FT10-03L THU 8:00 AM FT10-04L THU 11:00 AM FT10-03L THU 11:00 AM FT10-04L WED 8:00 AM FT10-03L WED 8:00 AM FT10-04L WED 11:00 AM FT10-03L WED 11:00 AM FT10-04L TUE 8:00 AM FT10-03L TUE 8:00 AM FT10-04L THU 2:00 PM FT10-03L THU 2:00 PM FT10-04L TUE 11:00 AM FT10-03L TUE 11:00 AM FT10-04L SUN 11:00 AM FT10-03L SUN 11:00 AM FT10-04L TUE 2:00 PM FT10-03L TUE 2:00 PM FT10-04L SAT 8:00 AM FT11-01L SAT 11:00 AM FT11-01L MON 2:00 PM FT10-03L MON 2:00 PM FT10-04L WED 2:00 PM FT10-03L WED 2:00 PM FT10-04L MON 8:00 AM FT10-03L
+        MON 8:00 AM FT10-04L MON 11:00 AM FT10-03L MON 11:00 AM FT10-04L SAT 8:00 AM FT10-03L SAT 8:00 AM FT10-04L SUN 11:00 AM FT11-01L SUN 2:00 PM FT11-01L TUE 8:00 AM FT11-01L TUE 2:00 PM FT11-01L SAT 11:00 AM FT10-03L SAT 11:00 AM FT10-04L SAT 2:00 PM FT10-03L SAT 2:00 PM FT10-04L THU 8:00 AM FT11-01L THU 11:00 AM FT11-01L SUN 2:00 PM FT10-03L SUN 2:00 PM FT10-04L SUN 8:00 AM FT10-03L SUN 8:00 AM FT10-04L
+        MON 11:00 AM 10G-34L TUE 8:00 AM 10G-34L TUE 11:00 AM 10G-34L MON 2:00 PM 10G-34L MON 8:00 AM 12D-26L TUE 2:00 PM 10G-34L TUE 8:00 AM 12D-26L WED 8:00 AM 10G-34L WED 11:00 AM 10G-34L SAT 8:00 AM 10G-34L MON 8:00 AM 09E-21L WED 2:00 PM 10G-34L SUN 2:00 PM 09F-24L SUN 11:00 AM 10G-34L THU 8:00 AM 10G-34L SUN 2:00 PM 10G-34L SUN 8:00 AM 12D-26L SAT 11:00 AM 10G-34L SAT 2:00 PM 10G-34L THU 11:00 AM 10G-34L SAT 8:00 AM 12D-26L TUE 2:00 PM 09F-24L THU 8:00 AM 12D-26L MON 8:00 AM 10G-34L THU 11:00 AM 09F-26L THU 2:00 PM 09F-26L MON 2:00 PM 09F-26L WED 8:00 AM 09F-26L TUE 8:00 AM 09F-26L TUE 11:00 AM 09F-26L WED 11:00 AM 09F-26L TUE 2:00 PM 09F-26L SAT 2:00 PM 09F-24L
+        WED 2:00 PM 09F-26L TUE 2:00 PM 09B-11L SAT 11:00 AM 09F-26L SAT 2:00 PM 09F-26L SAT 11:00 AM 09F-24L SUN 8:00 AM 09F-26L SUN 11:00 AM 09F-26L MON 11:00 AM 09F-26L SUN 2:00 PM 09F-26L MON 8:00 AM 09F-26L
+        SAT 09F-27L 11:00 AM SAT 09F-27L 2:00 PM THU 09F-27L 8:00 AM SUN 12F-30L 2:00 PM WED 09F-27L 8:00 AM WED 09F-27L 2:00 PM TUE 10G-32L 2:00 PM SUN 12F-30L 8:00 AM SUN 12F-30L 11:00 AM MON 12F-30L 8:00 AM MON 12F-30L 11:00 AM SAT 11:00 AM FT10-01L SAT FT10-02L 11:00 AM WED FT10-01L 8:00 AM WED FT10-02L 8:00 AM MON FT10-01L 11:00 AM MON FT10-02L 11:00 AM THU FT10-01L 11:00 AM THU FT10-02L 11:00 AM MON FT10-01L 2:00 PM MON FT10-02L 2:00 PM WED FT10-01L 11:00 AM WED FT10-02L 11:00 AM TUE FT10-01L 2:00 PM TUE FT10-02L 2:00 PM MON FT10-01L 8:00 AM MON FT10-02L 8:00 AM SUN FT10-01L 11:00 AM SUN 11:00 AM FT10-02L SUN 8:00 AM FT10-01L SUN 8:00 AM FT10-02L TUE 11:00 AM 10G-33L
+        MON 8:00 AM 10G-33L SUN 11:00 AM 10G-33L SUN 11:00 AM 10G-33L MON 8:00 AM 10G-33L TUE 11:00 AM 10G-33L TUE 8:00 AM 10G-33L TUE 8:00 AM 10G-33L WED 8:00 AM 10G-33L WED 8:00 AM 10G-33L THU 8:00 AM 12F-30L THU 11:00 AM 12F-30L SAT 2:00 PM 12F-30L SAT 2:00 PM 12F-31L THU 2:00 PM 12F-30L THU 2:00 PM 12F-31L SAT 11:00 AM 12F-31L TUE 8:00 AM 12F-30L THU 11:00 AM 12F-31L SAT 8:00 AM 12F-30L TUE 11:00 AM 12F-30L TUE 2:00 PM 12F-30L SAT 11:00 AM 12F-30L TUE 8:00 AM 12F-31L TUE 11:00 AM 12F-31L TUE 2:00 PM 12F-31L TUE 2:00 PM FT11-04L THU 11:00 AM 09B-10L WED 2:00 PM 12F-31L WED 2:00 PM 12F-31L WED 11:00 AM 12F-32L WED 11:00 AM 12F-32L THU 11:00 AM 09E-22L
+        THU 11:00 AM 09E-22L THU 2:00 PM 09E-22L MON 8:00 AM 12F-32L THU 2:00 PM 09E-22L WED 8:00 AM 12F-32L TUE 11:00 AM 12F-32L TUE 11:00 AM 12F-32L WED 8:00 AM 12F-32L SUN 2:00 PM 12F-32L SUN 2:00 PM 12F-32L SAT 2:00 PM 12F-32L MON 8:00 AM 12F-32L SUN 11:00 AM 12F-32L SUN 11:00 AM 12F-32L MON 11:00 AM 12F-32L MON 11:00 AM 12F-32L MON 2:00 PM 12F-32L SAT 2:00 PM 12F-32L MON 2:00 PM 12F-32L TUE 2:00 PM 12F-32L TUE 2:00 PM 12F-32L SAT 2:00 PM 12D-26L SAT 2:00 PM 12D-26L TUE 11:00 AM 12D-26L MON 2:00 PM 12D-26L MON 2:00 PM 12D-26L MON 8:00 AM 12D-27L SUN 11:00 AM 12D-26L SUN 11:00 AM 12D-26L
+        MON 8:00 AM 12D-27L WED 8:00 AM 12D-26L WED 8:00 AM 12D-26L TUE 11:00 AM 12D-26L TUE 2:00 PM 12D-26L WED 2:00 PM 12D-26L SUN 2:00 PM 12D-26L WED 2:00 PM 12D-26L THU 11:00 AM 12D-26L THU 11:00 AM 12D-26L MON 2:00 PM 09F-24L MON 2:00 PM 09F-24L SAT 11:00 AM 12D-26L TUE 2:00 PM 12D-26L THU 8:00 AM 12D-27L SAT 11:00 AM 12D-26L THU 8:00 AM 12D-27L SUN 2:00 PM 12D-26L TUE 11:00 AM 10E-27L TUE 11:00 AM 10E-27L TUE 8:00 AM 09B-11L TUE 11:00 AM 09B-11L THU 2:00 PM 09B-10L WED 2:00 PM 09E-21L SUN 11:00 AM 12F-31L SUN 2:00 PM 10G-33L SUN 8:00 AM 09F-25L MON 8:00 AM 09B-11L MON 11:00 AM 09B-11L WED 11:00 AM 12F-31L MON 2:00 PM 09B-11L
+        TUE 11:00 AM 09B-10L WED 11:00 AM 09E-22L SAT 8:00 AM 09B-11L THU 8:00 AM 09B-11L SAT 11:00 AM 09B-11L SAT 2:00 PM 09B-11L TUE 8:00 AM 09E-21L THU 11:00 AM 09B-11L SAT 8:00 AM 09E-21L WED 11:00 AM 12D-27L WED 2:00 PM 10E-27L SAT 11:00 AM 12D-27L SAT 11:00 AM 12D-27L WED 2:00 PM 10E-27L THU 2:00 PM 12D-27L TUE 11:00 AM 12D-27L THU 2:00 PM 12D-27L SUN 2:00 PM 12D-27L THU 11:00 AM 12D-27L TUE 11:00 AM 12D-27L THU 11:00 AM 12D-27L SAT 2:00 PM 12D-27L SAT 2:00 PM 12D-27L TUE 2:00 PM 12D-27L TUE 2:00 PM 12D-27L SUN 2:00 PM 12D-27L MON 2:00 PM 12D-27L MON 2:00 PM 12D-27L MON 11:00 AM 12D-27L MON 11:00 AM 12D-27L SUN 11:00 AM 12D-27L
+        SUN 11:00 AM 12D-27L WED 11:00 AM 12D-27L MON 11:00 AM 12D-26L MON 11:00 AM 12D-26L SUN 2:00 PM 09F-27L TUE 2:00 PM 09F-27L SUN 8:00 AM 09F-27L SUN 11:00 AM 09F-27L MON 11:00 AM 09F-27L WED 11:00 AM 09F-27L MON 2:00 PM 09F-27L WED 11:00 AM 09F-24L TUE 11:00 AM 09F-24L SUN 11:00 AM 09F-24L TUE 11:00 AM 09F-27L WED 11:00 AM 12F-30L WED 2:00 PM 09E-22L TUE 2:00 PM 09B-10L MON 11:00 AM 10E-27L TUE 11:00 AM 09E-22L
+        MON 11:00 AM 10G-32L MON 11:00 AM 10G-32L WED 11:00 AM 10E-27L WED 11:00 AM 10E-27L TUE 2:00 PM 10E-27L SAT 2:00 PM 09E-22L MON 11:00 AM 09E-21L MON 2:00 PM 09E-21L WED 11:00 AM 09B-10L SAT 2:00 PM 10E-27L TUE 8:00 AM 09B-08L MON 11:00 AM 09F-24L MON 2:00 PM 12F-30L WED 2:00 PM 09B-10L WED 11:00 AM 12D-26L THU 11:00 AM 09F-24L TUE 11:00 AM 09E-21L SUN 8:00 AM 12D-27L SUN 2:00 PM 09B-11L THU 8:00 AM 09F-24L SUN 8:00 AM 10G-32L TUE 8:00 AM 10G-32L TUE 11:00 AM 10G-32L MON 2:00 PM 10G-32L THU 8:00 AM 10G-32L THU 11:00 AM 10G-32L SAT 11:00 AM 10G-32L
+        SAT 2:00 PM 10G-32L WED 11:00 AM 10G-32L SUN 11:00 AM 10G-32L SAT 11:00 AM 09E-21L SAT 2:00 PM 09E-21L THU 11:00 AM 09E-21L SUN 11:00 AM 09F-25L SUN 2:00 PM 09F-25L MON 11:00 AM 09F-25L WED 11:00 AM 09F-25L WED 2:00 PM 09F-25L THU 2:00 PM 09F-25L MON 2:00 PM 09F-25L WED 8:00 AM 09F-25L SAT 8:00 AM 09F-25L
+        SAT 11:00 AM 09F-25L SAT 2:00 PM 09F-25L TUE 8:00 AM 09F-25L TUE 11:00 AM 09F-25L THU 11:00 AM 09F-25L TUE 2:00 PM 09F-25L SUN 2:00 PM 12F-31L THU 8:00 AM 09F-26L SUN 2:00 PM FT11-04L SUN 2:00 PM 10E-27L SUN 11:00 AM 10E-27L
+        `;
+
+            // ─────────────────────────────────────
+            // 2. CONSTANTS
+            // ─────────────────────────────────────
+            const DAYS = ['SAT', 'SUN', 'MON', 'TUE', 'WED', 'THU'];
+            const TIME_SLOTS = ['8:00 AM', '11:00 AM', '2:00 PM'];
+            const DAY_LABEL_MAP = {
+                'SAT': 'Saturday',
+                'SUN': 'Sunday',
+                'MON': 'Monday',
+                'TUE': 'Tuesday',
+                'WED': 'Wednesday',
+                'THU': 'Thursday'
+            };
+            const DAY_FIX_MAP = { 'SAI': 'SAT' }; // typo correction
+
+            // ─────────────────────────────────────
+            // 3. PARSE OCCUPANCY DATA
+            // ─────────────────────────────────────
+            function parseOccupancyData(rawText) {
+                const occupied = {};
+                DAYS.forEach(d => {
+                    occupied[d] = {};
+                    TIME_SLOTS.forEach(t => { occupied[d][t] = new Set(); });
+                });
+
+                // Normalize whitespace
+                const text = rawText.replace(/\s+/g, ' ').trim();
+
+                // Pattern 1: DAY TIME LAB  (e.g., "SUN 11:00 AM FT11-03L")
+                const pattern1 = /(SAT|SUN|MON|TUE|WED|THU|SAI)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))\s+([A-Z0-9]+-[A-Z0-9]+L)/gi;
+
+                // Pattern 2: DAY LAB TIME  (e.g., "SAT 09F-27L 11:00 AM")
+                const pattern2 = /(SAT|SUN|MON|TUE|WED|THU|SAI)\s+([A-Z0-9]+-[A-Z0-9]+L)\s+(\d{1,2}:\d{2}\s*(?:AM|PM))/gi;
+
+                const matches = [];
+
+                // Collect all matches from both patterns
+                let match;
+                while ((match = pattern1.exec(text)) !== null) {
+                    const dayRaw = match[1].toUpperCase();
+                    const timeRaw = match[2].trim();
+                    const lab = match[3];
+                    const day = DAY_FIX_MAP[dayRaw] || dayRaw;
+                    const time = normalizeTime(timeRaw);
+                    if (DAYS.includes(day) && TIME_SLOTS.includes(time)) {
+                        matches.push({ day, time, lab });
+                    }
+                }
+
+                while ((match = pattern2.exec(text)) !== null) {
+                    const dayRaw = match[1].toUpperCase();
+                    const lab = match[2];
+                    const timeRaw = match[3].trim();
+                    const day = DAY_FIX_MAP[dayRaw] || dayRaw;
+                    const time = normalizeTime(timeRaw);
+                    if (DAYS.includes(day) && TIME_SLOTS.includes(time)) {
+                        matches.push({ day, time, lab });
+                    }
+                }
+
+                // Populate the occupied sets
+                matches.forEach(({ day, time, lab }) => {
+                    occupied[day][time].add(lab);
+                });
+
+                return occupied;
+            }
+
+            function normalizeTime(raw) {
+                // Ensure consistent format like "8:00 AM", "11:00 AM", "2:00 PM"
+                let t = raw.replace(/\s+/g, ' ').trim();
+                // Ensure there's a space before AM/PM
+                t = t.replace(/(\d)(AM|PM)/i, '$1 $2');
+                // Standardize
+                const parts = t.split(' ');
+                if (parts.length >= 2) {
+                    const timePart = parts[0];
+                    const ampm = parts[parts.length - 1].toUpperCase();
+                    // Ensure two-digit minutes
+                    let [hour, min] = timePart.split(':');
+                    if (!min) min = '00';
+                    hour = parseInt(hour, 10);
+                    return `${hour}:${min.padStart(2, '0')} ${ampm}`;
+                }
+                return t;
+            }
+
+            // ─────────────────────────────────────
+            // 4. BUILD THE DATA MODEL
+            // ─────────────────────────────────────
+            const occupiedData = parseOccupancyData(RAW_DATA);
+
+            // Extract all unique lab codes from the parsed data
+            const allLabsSet = new Set();
+            DAYS.forEach(d => {
+                TIME_SLOTS.forEach(t => {
+                    occupiedData[d][t].forEach(lab => allLabsSet.add(lab));
+                });
+            });
+            const ALL_LABS = Array.from(allLabsSet).sort((a, b) => {
+                // Sort: numeric-prefixed first, then FT-prefixed
+                const aIsFT = a.startsWith('FT');
+                const bIsFT = b.startsWith('FT');
+                if (aIsFT && !bIsFT) return 1;
+                if (!aIsFT && bIsFT) return -1;
+                return a.localeCompare(b);
+            });
+            const TOTAL_LABS = ALL_LABS.length;
+
+            // ─────────────────────────────────────
+            // 5. APPLICATION STATE
+            // ─────────────────────────────────────
+            const state = {
+                selectedDay: 'SUN',
+                selectedTime: '8:00 AM',
+                searchQuery: '',
+            };
+
+            // ─────────────────────────────────────
+            // 6. DERIVED DATA HELPERS
+            // ─────────────────────────────────────
+            function getOccupiedLabs(day, time) {
+                return occupiedData[day]?.[time] || new Set();
+            }
+
+            function getFreeLabs(day, time) {
+                const occupied = getOccupiedLabs(day, time);
+                return ALL_LABS.filter(lab => !occupied.has(lab));
+            }
+
+            function getFilteredLabs(day, time, query) {
+                const freeLabs = getFreeLabs(day, time);
+                const occupiedLabs = ALL_LABS.filter(lab => getOccupiedLabs(day, time).has(lab));
+                const allWithStatus = [
+                    ...freeLabs.map(lab => ({ lab, status: 'available' })),
+                    ...occupiedLabs.map(lab => ({ lab, status: 'occupied' })),
+                ];
+                // Sort: available first, then alphabetically
+                allWithStatus.sort((a, b) => {
+                    if (a.status === 'available' && b.status === 'occupied') return -1;
+                    if (a.status === 'occupied' && b.status === 'available') return 1;
+                    return a.lab.localeCompare(b.lab);
+                });
+                if (!query.trim()) return allWithStatus;
+                const q = query.trim().toLowerCase();
+                return allWithStatus.filter(item => item.lab.toLowerCase().includes(q));
+            }
+
+            // ─────────────────────────────────────
+            // 7. DOM REFERENCES
+            // ─────────────────────────────────────
+            const daySelectorEl = document.getElementById('daySelector');
+            const timeSelectorEl = document.getElementById('timeSelector');
+            const resultsGridEl = document.getElementById('resultsGrid');
+            const statsRowEl = document.getElementById('statsRow');
+            const searchInputEl = document.getElementById('searchInput');
+
+            // ─────────────────────────────────────
+            // 8. RENDERING FUNCTIONS
+            // ─────────────────────────────────────
+            function renderDaySelector() {
+                daySelectorEl.innerHTML = '';
+                DAYS.forEach(day => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'day-btn';
+                    btn.textContent = day;
+                    btn.setAttribute('aria-label', DAY_LABEL_MAP[day]);
+                    btn.setAttribute('role', 'radio');
+                    btn.setAttribute('aria-checked', day === state.selectedDay ? 'true' : 'false');
+                    if (day === state.selectedDay) {
+                        btn.classList.add('day-btn--active');
+                    }
+                    btn.addEventListener('click', () => {
+                        if (state.selectedDay !== day) {
+                            state.selectedDay = day;
+                            refreshAll();
+                        }
+                    });
+                    btn.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            btn.click();
+                        }
+                    });
+                    daySelectorEl.appendChild(btn);
+                });
+            }
+
+            function renderTimeSelector() {
+                timeSelectorEl.innerHTML = '';
+                TIME_SLOTS.forEach(time => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'time-btn';
+                    btn.textContent = time;
+                    btn.setAttribute('role', 'radio');
+                    btn.setAttribute('aria-checked', time === state.selectedTime ? 'true' : 'false');
+                    if (time === state.selectedTime) {
+                        btn.classList.add('time-btn--active');
+                    }
+                    btn.addEventListener('click', () => {
+                        if (state.selectedTime !== time) {
+                            state.selectedTime = time;
+                            refreshAll();
+                        }
+                    });
+                    btn.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            btn.click();
+                        }
+                    });
+                    timeSelectorEl.appendChild(btn);
+                });
+            }
+
+            function renderStats() {
+                const freeLabs = getFreeLabs(state.selectedDay, state.selectedTime);
+                const occupiedCount = TOTAL_LABS - freeLabs.length;
+                statsRowEl.innerHTML = `
+            <div class="stat-card">
+            <div class="stat-value">${TOTAL_LABS}</div>
+            <div class="stat-label">Total Labs</div>
+            </div>
+            <div class="stat-card">
+            <div class="stat-value stat-value--accent">${freeLabs.length}</div>
+            <div class="stat-label">Free Labs</div>
+            </div>
+            <div class="stat-card">
+            <div class="stat-value">${occupiedCount}</div>
+            <div class="stat-label">Occupied Labs</div>
+            </div>
+            `;
+            }
+
+            function renderResultsGrid() {
+                const items = getFilteredLabs(state.selectedDay, state.selectedTime, state.searchQuery);
+                resultsGridEl.innerHTML = '';
+
+                if (items.length === 0) {
+                    const emptyEl = document.createElement('div');
+                    emptyEl.className = 'empty-state';
+                    emptyEl.innerHTML =
+                        '<p class="empty-state-text">No labs match your search. Try a different code or clear the filter.</p>';
+                    resultsGridEl.appendChild(emptyEl);
+                    return;
+                }
+
+                items.forEach(({ lab, status }) => {
+                    const card = document.createElement('div');
+                    card.className = 'lab-card';
+                    card.setAttribute('role', 'listitem');
+                    if (status === 'available') {
+                        card.classList.add('lab-card--available');
+                    } else {
+                        card.classList.add('lab-card--occupied');
+                    }
+
+                    const codeEl = document.createElement('span');
+                    codeEl.className = 'lab-code';
+                    codeEl.textContent = lab;
+
+                    const statusEl = document.createElement('span');
+                    statusEl.className = 'lab-status';
+                    if (status === 'available') {
+                        statusEl.classList.add('lab-status--available');
+                        statusEl.innerHTML =
+                            '<span class="status-dot status-dot--available" aria-hidden="true"></span>Available';
+                    } else {
+                        statusEl.classList.add('lab-status--occupied');
+                        statusEl.innerHTML =
+                            '<span class="status-dot status-dot--occupied" aria-hidden="true"></span>Occupied';
+                    }
+
+                    card.appendChild(codeEl);
+                    card.appendChild(statusEl);
+                    resultsGridEl.appendChild(card);
+                });
+            }
+
+            function refreshAll() {
+                renderDaySelector();
+                renderTimeSelector();
+                renderStats();
+                renderResultsGrid();
+            }
+
+            // ─────────────────────────────────────
+            // 9. EVENT LISTENERS
+            // ─────────────────────────────────────
+            searchInputEl.addEventListener('input', function() {
+                state.searchQuery = this.value;
+                renderResultsGrid();
+                // Update stats are unaffected by search, but results change
+            });
+
+            // Keyboard shortcut: Ctrl+F focuses search
+            document.addEventListener('keydown', function(e) {
+                if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                    // Only intercept if not in an input already
+                    if (document.activeElement === document.body ||
+                        document.activeElement === document.getElementById('mainContent')) {
+                        e.preventDefault();
+                        searchInputEl.focus();
+                        searchInputEl.select();
+                    }
+                }
+            });
+
+            // ─────────────────────────────────────
+            // 10. INITIAL RENDER
+            // ─────────────────────────────────────
+            function init() {
+                renderDaySelector();
+                renderTimeSelector();
+                renderStats();
+                renderResultsGrid();
+            }
+
+            init();
+
+            // Log summary for verification
+            console.log(`Lab Availability Tool Initialized.`);
+            console.log(`Total unique labs: ${TOTAL_LABS}`);
+            console.log(`Days: ${DAYS.join(', ')}`);
+            console.log(`Time slots: ${TIME_SLOTS.join(', ')}`);
+            console.log(`Currently viewing: ${state.selectedDay} at ${state.selectedTime}`);
+            const initialFree = getFreeLabs(state.selectedDay, state.selectedTime);
+            console.log(`Free labs (${state.selectedDay} ${state.selectedTime}): ${initialFree.length} of ${TOTAL_LABS}`);
+            console.log(`Free: ${initialFree.sort().join(', ') || '(none)'}`);
+        })();
+    </script>
+</body>
+</html>
